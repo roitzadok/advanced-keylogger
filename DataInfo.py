@@ -1,5 +1,5 @@
 import os
-
+import shutil
 
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -100,3 +100,17 @@ class DataInfo:
         if os.path.exists(file_path):
             return True
         return False
+
+    def zip_dir(self, dir_path="", new_zip_location=""):
+        if not dir_path:
+            dir_path = self.all_data_path
+        if not new_zip_location:
+            new_zip_location = dir_path + ".zip"
+        shutil.make_archive(new_zip_location, 'zip', dir_path)
+
+    def delete_dir(self, dir_path=""):
+        if not dir_path:
+            dir_path = self.all_data_path
+        elif dir_path in self.data_types:
+            dir_path = self.all_data_path + "\\" + dir_path
+        shutil.rmtree(dir_path)

