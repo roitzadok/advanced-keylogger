@@ -12,12 +12,20 @@ from email import encoders
 
 class Email:
     def __init__(self, your_mail, your_password):
+        """
+        sets the class's vars and create smtp connection
+        @param your_mail: your account's email address
+        @param your_password: the password to your account
+        """
         self.mail = your_mail
         self.password = your_password
         self.server_ssl = smtplib.SMTP_SSL("smtp.gmail.com", 465)
         self.read_conn = imaplib.IMAP4_SSL('imap.gmail.com')
 
     def login(self):
+        """
+        login to the gmail account
+        """
         self.server_ssl.login(self.mail, self.password)
         self.read_conn.login(self.mail, self.password)
 
@@ -57,12 +65,14 @@ class Email:
             part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(file_name))
             msg.attach(part)
             f.close()
-        print msg
         # ssl server doesn't support or need tls, so don't call server_ssl.starttls()
         self.server_ssl.sendmail(self.mail, target, msg.as_string())
         self.server_ssl.quit()
 
     def get_all_mail(self):
+        """
+        get all the mail from the account
+        """
         self.read_conn.select("inbox")  # connect to inbox.
         # select only unread messages
         result, data = self.read_conn.search(None, "ALL")
@@ -73,6 +83,10 @@ class Email:
         return id_list
 
     def get_mail_content(self, mail):
+        """
+        get the content out of a given email
+        @param mail: the given mail
+        """
         try:
             # fetch the email body (RFC822) for the given ID
             result, data = self.read_conn.fetch(mail, "(RFC822)")
@@ -83,5 +97,8 @@ class Email:
             self.get_mail_content(mail)
 
     def delete_mail(self, msg):
+        """
+        delete a chosen email
+        """
         self.read_conn.store(msg, '+FLAGS', '\\Deleted')
         self.read_conn.expunge()
