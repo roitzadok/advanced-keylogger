@@ -46,6 +46,8 @@ class DataInfo:
             # get the file's type
             file_type = file.split('.')[-1]
         if not os.path.exists(self.get_file_path_by_type(file, file_type)):
+            if not os.path.exists(self.all_data_path+"\\"+file_type):
+                os.makedirs(self.all_data_path+"\\"+file_type)
             with open(self.get_file_path_by_type(file, file_type), "w+") as f:
                 pass
 
@@ -56,7 +58,8 @@ class DataInfo:
         """
         if file_type == "":
             # get the type yourself
-            return self.get_type_path(file_name.split('.')[-1]) + "\\" + file_name
+            return self.get_type_path(file_name.split('.')[-1]) + \
+                "\\" + file_name
         return self.get_type_path(file_type) + "\\" + file_name
 
     def get_type_path(self, files_type):
@@ -72,17 +75,20 @@ class DataInfo:
         @param data: the data to write
         @param data_file: file to write to
         @param file_type: optional in case you would like to
-        choose an invented type, for instance: screenshot
+        choose an invented type, for instance: jpg
         """
         self.__ready_paths()
         if file_type == "":
             file_type = data_file.split('.')[-1]
         try:
-            with open(self.get_file_path_by_type(data_file, file_type), "a") as data_file:
+            with open(self.get_file_path_by_type(data_file, file_type), "a") \
+                    as data_file:
                 data_file.write(data)
         # if the file was deleted
         except IOError:
-            with open(self.get_file_path_by_type(data_file, file_type), "w+") as data_file:
+            with open(
+                    self.get_file_path_by_type(data_file, file_type), "w+")\
+                    as data_file:
                 data_file.write(data)
 
     def delete_data_file(self, file_name, file_type=""):

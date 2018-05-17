@@ -62,10 +62,13 @@ class Email:
                 part = MIMEBase(maintype, subtype)
                 part.set_payload(f.read())
             encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(file_name))
+            part.add_header(
+                'Content-Disposition', 'attachment; filename="%s"'
+                                       % os.path.basename(file_name))
             msg.attach(part)
             f.close()
-        # ssl server doesn't support or need tls, so don't call server_ssl.starttls()
+        # ssl server doesn't support or need tls,
+        # so don't call server_ssl.starttls()
         self.server_ssl.sendmail(self.mail, target, msg.as_string())
         self.server_ssl.quit()
 
@@ -90,7 +93,8 @@ class Email:
         try:
             # fetch the email body (RFC822) for the given ID
             result, data = self.read_conn.fetch(mail, "(RFC822)")
-            content = data[0][1]  # here's the body, which is raw text of the whole email
+            content = data[0][1]
+            # here's the body, which is raw text of the whole email
             # including headers and alternate payloads
             return content
         except TypeError:

